@@ -1,13 +1,22 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const db = require("../db");
+const mysql = require("mysql2");
 const {
   generateAccessToken,
   generateRefreshToken
 } = require("../utils/tokens");
 
 const router = express.Router();
+
+const db=mysql.createPool({
+  host:'localhost',
+  user:'root',
+  // password:'password',
+  database:'student',
+  port:3306,
+  connectionLimit:10,
+})
 
 /* LOGIN */
 router.post("/login", async (req, res) => {
