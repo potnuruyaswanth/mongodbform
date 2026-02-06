@@ -4,11 +4,29 @@ const bodyParser=require('body-parser');
 const cors=require('cors');
 const mysql=require('mysql2');
 const jwt=require('jsonwebtoken');
+const cookieParser=require('cookie-parser');
+const rateLimit=require('express-rate-limit');
 const app=express();
+const JWT_Token_Secret="bhgd#W%&^%FVYTF^%R*VU^%FVUI^%8yup9buyubywegf6ff^%$E^%^*%R*^";
 
 app.use(cors({origin:'*'}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended:true}));
+
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Only 5 attempts per window
+  message: {
+    error: 'Too many authentication attempts',
+    message: 'Please wait 15 minutes before trying again'
+  },
+  skipSuccessfulRequests: true, // Do not count successful logins
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+
 
 const db=mysql.createPool({
     host:'localhost',
@@ -52,7 +70,8 @@ app.post('/register',async(req,res)=>{
     
 })
 
-app.get('/login', (req,res)=>{
+app.post('/login', authLimiter,(req,res)=>{
+    console.log("request rate limit : ",req.rateLimit);
     const {username,password}=req.body;
     db.query('SELECT * FROM registration WHERE username=?',[username],async (err,result)=>{
         if (err) {
@@ -67,13 +86,16 @@ app.get('/login', (req,res)=>{
         const isPasswordValid=await bcrypt.compare(password,user.hashedpassword);
         console.log(isPasswordValid);
         if (isPasswordValid) {
-            res.send({isPasswordValid:true});
+            // res.send({isPasswordValid:true});
+            const jwt_token=jwt.sign(req.body,JWT_Token_Secret,{expiresIn:'1h'});
+            res.send({message:"Login successfully",result:result,token:jwt_token,});
         }else{
             res.status(401).send('Incorrect password');
         }
     })
 })
 
+app.get('/')
 app.listen(3000,()=>{
     console.log('Server is running on port 3000');
 })
