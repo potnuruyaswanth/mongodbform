@@ -1,10 +1,9 @@
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: "http://localhost:3000",
-  withCredentials: true
+const api = window.axios.create({
+  baseURL: "http://127.0.0.1:3000", // backend URL - use 127.0.0.1 to match Live Server origin
+  withCredentials: true //  allows cookies
 });
 
+// --- interceptor ---
 let isRefreshing = false;
 let queue = [];
 
@@ -39,7 +38,7 @@ api.interceptors.response.use(
         return api(original);
       } catch (e) {
         processQueue(e);
-        window.location.href = "/login";
+        window.location.href = "/login.html";
         return Promise.reject(e);
       } finally {
         isRefreshing = false;
@@ -49,5 +48,6 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
+
 
 export default api;

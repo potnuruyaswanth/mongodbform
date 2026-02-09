@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <button id="logout">Logout</button>
+
+    <script type="module">
+        import api from "./js/axios.js";
+
+        (async () => {
+            try {
+                const res = await api.get("/dashboard");
+                console.log(res.data);
+            } catch {
+                window.location.href = "/login.html";
+            }
+        })();
+
+        document.getElementById("logout").onclick = async () => {
+            await api.post("/logout");
+            window.location.href = "/login.html";
+        };
+    </script>
+
+</body>
+</html>
